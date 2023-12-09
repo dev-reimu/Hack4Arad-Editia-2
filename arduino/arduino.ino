@@ -1,4 +1,3 @@
-#include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h> 
 
@@ -10,13 +9,8 @@ void setup() {
   Serial.begin(115200);
 
   // Access point
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid);
-
-  // Attempt to connect to other similar Access Points
-  findOtherAPs();
-  WiFi.onStationModeDisconnected(onWiFiDisconnect);
-  WiFi.onStationModeGotIP(onWiFiConnect);
 
   // Set up web server
   server.on("/", HTTP_GET, handleRoot);
@@ -25,30 +19,6 @@ void setup() {
 
 void loop() {
   server.handleClient();
-}
-
-void onWiFiDisconnect(const WiFiEventStationModeDisconnected& event) {
-  Serial.println("Disconnected from UrbanDevCrew Access Point.");
-  Serial.print("Reason: ");
-  Serial.println(event.reason);
-  
-  // Attempt to reconnect to Wi-Fi network
-  findOtherAPs();
-}
-
-void onWiFiConnect(const WiFiEventStationModeGotIP& event) {
-  Serial.print("Connected to UrbanDevCrew Access Point.");
-  Serial.println(WiFi.localIP());
-}
-
-void findOtherAPs() {
-  WiFi.begin(ssid);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(5000);
-    Serial.println("Searching for other UrbanDevCrew access points nearby...");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
 }
 
 void handleRoot() {
