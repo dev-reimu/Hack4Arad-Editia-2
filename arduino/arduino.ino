@@ -26,16 +26,21 @@ void loop() {
 
 void handleRoot() {
   Serial.println(WiFi.softAPIP());
-  server.send(200, "text/html", "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><title>UrbanDev Crew</title></head><body><div id=\"message-container\"></div><form id=\"send-container\"><input type=\"text\" id=\"message-input\"><button type=\"submit\" id=\"send-button\">Send</button></form><script>const name = prompt('What is your name?'); const messageForm = document.getElementById('send-container'); const messageInput = document.getElementById('message-input'); messageForm.addEventListener('submit', e => { e.preventDefault(); const message = messageInput.value; fetch('/message', { method: 'post', headers: { 'Content-Type': 'text/plain' }, body: message }).then(res => res.text()) .then(res => console.log(res)) messageInput.value = ''; return false; });</script></body></html>");
+  server.send(200, "text/html", "<!DOCTYPE html>\n<html lang=\"en\">\n\n<head>\n  <meta charset=\"UTF-8\">\n\n  <title>UrbanDev Crew</title>\n\n\n</head>\n\n<body>\n  \n  <div id=\"message-container\"></div>\n  <form id=\"send-container\">\n    <input type=\"text\" id=\"message-input\">\n    <button type=\"submit\" id=\"send-button\">Send</button>\n  </form>\n\n  <script>\n\n    const name = prompt('What is your name?');\n\n    const messageForm = document.getElementById('send-container');\n    const messageInput = document.getElementById('message-input');\n\n    messageForm.addEventListener('submit', e => {\n      e.preventDefault();\n      const message = messageInput.value;\n      fetch('http://192.168.4.1/message', {\n        method: 'post',\n        headers: {\n          'Content-Type': 'text/plain'\n        },\n        body: name + \": \" + message,\n        mode: \"no-cors\"\n        \n      }).then(res => res.text())\n        .then(res => console.log(res))\n      \n      messageInput.value = '';\n      return false; \n    });\n\n\n\n\n    function myFunction() {\n      console.log('This function is called every 5 seconds');\n    }\n\n    //setInterval(myFunction, 5000);\n\n  </script>\n</body>\n\n</html>");
 }
 
 void checkForChanges() {
+  if (clients <= 0) {
+    server.send(200, "text/plain", "");
+    return;
+  }
+
   server.send(200, "text/plain", allMessages);
 
   if (totalClients == WiFi.softAPgetStationNum()) {
     clients -= 1;
   }
-  else{
+  else {
     totalClients = WiFi.softAPgetStationNum();
   }
 
@@ -58,9 +63,9 @@ void handleMessage() {
     Serial.println(message);
 
     if (allMessages != "") {
-      strcat(allMessages, "@#@#@#");
+      allMessages += "@#@#@#";
     }
-    strcat(allMessages, message);
+    allMessages += message;
 
     Serial.println("-------------------------");
     Serial.print("All messages: ");
@@ -69,8 +74,6 @@ void handleMessage() {
     
     totalClients = WiFi.softAPgetStationNum();
     clients = totalClients;
-    
-    Serial.println(clients);
   }
   else {
     server.send(404, "text/plain", "Failed to send message.");
